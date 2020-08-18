@@ -21,8 +21,7 @@ namespace CodeBlogFitness.CMD
                 var gender = Console.ReadLine();
                 DateTime birthDate = ParseDateTime();
                 double weight = ParseDouble("вес");
-                double height = ParseDouble("рост");
-              //  birthDate = NewMethod();
+                double height = ParseDouble("рост");              
                 userController.setNewUserData(gender, birthDate, weight, height);
                 // 
             }
