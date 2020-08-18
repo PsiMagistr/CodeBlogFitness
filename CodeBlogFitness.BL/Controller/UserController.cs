@@ -17,17 +17,31 @@ namespace CodeBlogFitness.BL.Controller
         /// <summary>
         /// Пользователь приложения.
         /// </summary>
-        public User User { get;}
+        public List<User> Users { get;}
+        public User CurrentUser { get; }
+        public bool IsNewUser { get; } = false;
 
         /// <summary>
         /// Создание нового контроллера пользователя.
         /// </summary>
-        /// <param name="user"></param>
-        public UserController(string userName, string genderName, DateTime birdthDay, double weight, double height)
+        /// <param name="Users"></param>
+        public UserController(string userName)
         {
-            var gender = new Gender(genderName);
-            User = new User(userName, gender, birdthDay, weight, height);
-           // User = user ?? throw new ArgumentNullException("Пользователь не может быть равен null.", nameof(user));
+            if (string.IsNullOrWhiteSpace(userName))
+            {
+                throw new ArgumentNullException("Имя пользователя не может быть пустым.", nameof(userName));
+            }
+            Users = GetUserData();
+            CurrentUser = Users.SingleOrDefault(u => u.Name == userName); 
+            
+            if(CurrentUser == null)
+            {
+                Console.WriteLine("gg6");
+                CurrentUser = new User(userName);
+                Users.Add(CurrentUser);
+                IsNewUser = true;
+                Save();
+            }
         }
 
         /// <summary>
@@ -38,28 +52,38 @@ namespace CodeBlogFitness.BL.Controller
             var formatter = new BinaryFormatter();
             using (var fs = new FileStream("users.dat", FileMode.OpenOrCreate))
             {
-                formatter.Serialize(fs, User);
+                formatter.Serialize(fs, Users);
             }
         }
 
         /// <summary>
-        /// Получить данные пользователя
+        /// Получить список пользователей
         /// </summary>
-        /// <returns>Пользователь приложения.</returns>
-
-        public UserController()
+        /// <returns>Users</returns>
+        private List<User> GetUserData()
         {
             var formatter = new BinaryFormatter();
             using (var fs = new FileStream("users.dat", FileMode.OpenOrCreate))
             {
-                if (formatter.Deserialize(fs) is User user)
+                if (formatter.Deserialize(fs) is List<User> users)
                 {
-                    User = user;
-                } 
+                    return users;
+                }             
+                    return new List<User>();           
+                
                 
                 // TODO: Что делать, если пользователя не прочитали?
             }
 
+        }
+        public void setNewUserData(string genderName, DateTime birthdate, double weight = 1, double height = 1)
+        {
+            // Проверка
+            CurrentUser.Gender = new Gender(genderName);
+            CurrentUser.BirthDate = birthdate;
+            CurrentUser.Weight = weight;
+            CurrentUser.Height = height;
+            Save();
         }
     }
 
